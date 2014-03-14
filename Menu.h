@@ -17,7 +17,8 @@ private:
 
     LiquidCrystal _lcd;
     uint8_t _state;
-    uint8_t _pressed;
+    unsigned long _pressed;
+    uint8_t _ipm;
 };
 
 #endif
