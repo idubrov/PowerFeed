@@ -75,7 +75,7 @@ ISR(TIMER1_COMPA_vect) {
             "cbi %0, %1\n\t"
             "1: \n\t"
             // Note: we use low-level access to the ports for performance
-            :: "I" (_SFR_IO_ADDR(PORTD)), "I" (PORTD0)
+            :: "I" (_SFR_IO_ADDR(STEP_PIN_PORT)), "I" (STEP_PIN_BIT)
             );
 }
 

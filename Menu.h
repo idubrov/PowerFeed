@@ -4,14 +4,14 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-const uint8_t FAULT_PIN = 11;
+#define STEP_PIN      A1 // PORTC1
+#define DIR_PIN       A2
+#define ENABLE_PIN    A3
+#define RESET_PIN     A4
+#define FAULT_PIN     A5
 
-const uint8_t STEP_PIN = 0;
-const uint8_t DIR_PIN = 1;
-const uint8_t ENABLE_PIN = 2;
-const uint8_t RESET_PIN = 3;
-
-const uint8_t STEP_PIN_LOW = PORTD0;
+#define STEP_PIN_PORT   PORTC
+#define STEP_PIN_BIT    PORTC1
 
 class Menu
 {

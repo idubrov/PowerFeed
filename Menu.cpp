@@ -108,7 +108,7 @@ void Menu::update() {
 
 uint8_t Menu::button() {
     int k = analogRead(0);
-    if (k < 30) {
+    if (k < 50) {
         return BRight;
     } else if (k < 180) {
         return BUp;
