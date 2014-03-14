@@ -13,7 +13,7 @@ const uint8_t BNone = -1;
 extern volatile uint8_t _speed;
 extern volatile uint8_t _target_speed;
 
-Menu::Menu() : _lcd(8, 9, 4, 5, 6, 7), _toggle(1), _ipm(10), _pressed_at(0) {
+Menu::Menu() : _lcd(8, 9, 4, 5, 6, 7), _toggle(1), _ipm(40), _pressed_at(0) {
 }
 
 void Menu::initialize() {
@@ -25,7 +25,7 @@ void Menu::redraw() {
     _lcd.home();
     _lcd.print(_toggle ? "Toggle   " : "Hold     ");
     _lcd.print("IPM: ");
-    _lcd.print(_ipm);
+    _lcd.print(_ipm / 4);
     _lcd.print(" ");
 
     _lcd.setCursor(0, 1);
@@ -51,54 +51,52 @@ void Menu::update() {
 
     if (_pressed_at == 0 || (millis() - _pressed_at) > 200) {
         if (b == BUp && _ipm < 60) {
-            _ipm++;
+            // one unit is 1/4 IPM
+            _ipm += 4;
             _pressed_at = millis();
-            // FIXME: update target speed?
         } else if (b == BDown && _ipm > 1) {
-            _ipm--;
+            // one unit is 1/4 IPM
+            _ipm -= 4;
             _pressed_at = millis();
-            // FIXME: update target speed?
         }
+        // Update target speed when jogging in "toggle" mode
         if (_toggle && _target_speed != 0) {
-            _target_speed = _ipm * 4;
+            _target_speed = _ipm;
         }
     }
 
     if (b == BNone) {
         _pressed_at = 0;
     } else if(_pressed_at == 0) {
-        if (b == BSelect && speed == 0) {
+        if (b == BSelect && speed == 0 && _target_speed == 0) {
+            // Change modes only when stopped
             _toggle = !_toggle;
         }
 
         if (_toggle) {
             if (_target_speed != 0 && b != BUp && b != BDown) {
+                // Stop when jogging in toggle mode and button is pressed
                 _target_speed = 0;
             } else if (speed == 0 && (b == BLeft || b == BRight)) {
+                // Jog in toggle mode
                 digitalWrite(DIR_PIN, b == BLeft ? LOW : HIGH);
-                _target_speed = _ipm * 4;
+                _target_speed = _ipm;
             }
         }
 
-        // Remember time we pressed the button
+        // Remember time button was pressed
         _pressed_at = millis();
     }
 
     if (!_toggle) {
-        uint8_t dir = digitalRead(DIR_PIN);
-        if (b == BLeft) {
-            if (dir == LOW) {
-                _target_speed = _ipm * 4;
+        if (b == BLeft || b == BRight) {
+            uint8_t dir = digitalRead(DIR_PIN);
+            uint8_t keyDir = b == BLeft ? LOW : HIGH;
+            if (dir == keyDir) {
+                _target_speed = _ipm;
             } else if (_speed == 0) {
-                digitalWrite(DIR_PIN, LOW); // Change direction
-                _target_speed = _ipm * 4;
-            }
-        } else if (b == BRight) {
-            if (dir == HIGH) {
-                _target_speed = _ipm * 4;
-            } else if (_speed == 0) {
-                digitalWrite(DIR_PIN, HIGH); // Change direction
-                _target_speed = _ipm * 4;
+                digitalWrite(DIR_PIN, keyDir); // Change direction
+                _target_speed = _ipm;
             }
         } else {
             _target_speed = 0;
