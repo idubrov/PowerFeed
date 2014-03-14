@@ -10,7 +10,6 @@ const uint8_t BSelect = 4;
 const uint8_t BNone = -1;
 
 
-extern volatile uint8_t _direction;
 extern volatile uint8_t _speed;
 extern volatile uint8_t _target_speed;
 
@@ -34,9 +33,16 @@ void Menu::redraw() {
     _lcd.print(_speed / 4);
     _lcd.print(" ");
     _lcd.setCursor(10, 1);
-    _lcd.print(_speed == 0 ? "      " :
-               (_direction ? ">>>>>>" :
-                             "<<<<<<"));
+    
+    uint8_t fault = digitalRead(FAULT_PIN);
+    if (fault == LOW) {
+        _lcd.print("!FAULT!");
+    } else if (_speed == 0) {
+        _lcd.print("       ");
+    } else {
+        uint8_t dir = digitalRead(DIR_PIN);
+        _lcd.print(dir == HIGH ? ">>>>>>" : "<<<<<<");
+    }
 }
 
 void Menu::update() {
@@ -69,7 +75,7 @@ void Menu::update() {
             if (_target_speed != 0 && b != BUp && b != BDown) {
                 _target_speed = 0;
             } else if (speed == 0 && (b == BLeft || b == BRight)) {
-                _direction = (b == BLeft) ? 0 : 1;
+                digitalWrite(DIR_PIN, b == BLeft ? LOW : HIGH);
                 _target_speed = _ipm * 4;
             }
         }
@@ -79,18 +85,19 @@ void Menu::update() {
     }
 
     if (!_toggle) {
+        uint8_t dir = digitalRead(DIR_PIN);
         if (b == BLeft) {
-            if (_direction == 0) {
+            if (dir == LOW) {
                 _target_speed = _ipm * 4;
             } else if (_speed == 0) {
-                _direction = 0;
+                digitalWrite(DIR_PIN, LOW); // Change direction
                 _target_speed = _ipm * 4;
             }
         } else if (b == BRight) {
-            if (_direction == 1) {
+            if (dir == HIGH) {
                 _target_speed = _ipm * 4;
             } else if (_speed == 0) {
-                _direction = 1;
+                digitalWrite(DIR_PIN, HIGH); // Change direction
                 _target_speed = _ipm * 4;
             }
         } else {

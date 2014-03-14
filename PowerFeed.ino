@@ -5,21 +5,22 @@ Menu _menu;
 
 volatile uint8_t _speed = 0;
 volatile uint8_t _target_speed = 0;
-volatile uint8_t _direction = 0; // left
 volatile uint8_t _acceleration = 1;
 volatile uint8_t _decceleration = 1;
 volatile uint8_t _counter;          // Internal step generator counter
 
-#define STEP_PORT       PORTB
-#define STEP_PORT_DIR   DDRB
-#define STEP_PIN        DDB5
-
 void setup() {
-    cli();
-    // Configure ports
-    STEP_PORT_DIR |= (1<<STEP_PIN);
-    STEP_PORT &= ~(1<<STEP_PIN);
+    // Configure fault pin as input with pull-up resistor.
+    // Fault condition when pulled low.
+    pinMode(FAULT_PIN, INPUT_PULLUP);
 
+    // Configure output pins
+    pinMode(STEP_PIN, OUTPUT);
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(ENABLE_PIN, OUTPUT);
+    pinMode(RESET_PIN, OUTPUT);
+
+    cli();
     // Set step generation timer1
     // CTC mode (OCR1A is top), no prescaler
     TCCR1A = 0;
@@ -73,7 +74,8 @@ ISR(TIMER1_COMPA_vect) {
             "nop\n\n"
             "cbi %0, %1\n\t"
             "1: \n\t"
-            :: "I" (_SFR_IO_ADDR(STEP_PORT)), "I" (STEP_PIN)
+            // Note: we use low-level access to the ports for performance
+            :: "I" (_SFR_IO_ADDR(PORTD)), "I" (PORTD0)
             );
 }
 
