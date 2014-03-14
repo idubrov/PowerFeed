@@ -3,8 +3,9 @@
 
 Menu _menu;
 
-volatile uint8_t _speed;
-volatile uint8_t _target_speed;
+volatile uint8_t _speed = 0;
+volatile uint8_t _target_speed = 0;
+volatile uint8_t _direction = 0; // left
 volatile uint8_t _acceleration = 1;
 volatile uint8_t _decceleration = 1;
 volatile uint8_t _counter;          // Internal step generator counter
@@ -19,9 +20,6 @@ void setup() {
     STEP_PORT_DIR |= (1<<STEP_PIN);
     STEP_PORT &= ~(1<<STEP_PIN);
 
-    // 1 IPM
-    _speed = 4;
-
     // Set step generation timer1
     // CTC mode (OCR1A is top), no prescaler
     TCCR1A = 0;
@@ -34,11 +32,11 @@ void setup() {
     OCR1A = (293 - 1);  // one clock for timer reset
 
     // Set acceleration timer2
-    // CTC mode, prescaler set to 1024, match on 100 (156.25 Hz)
+    // CTC mode, prescaler set to 1024, match on 100 (78.125 Hz)
     TCCR2A = (1<<WGM21);
     TCCR2B = (1<<CS20) | (1<<CS21) | (1<<CS22);
 
-    OCR2A = 100;
+    OCR2A = 200;
 
     // enable timer compare interrupt:
     TIMSK2 |= (1 << OCIE2A);
@@ -50,6 +48,7 @@ void setup() {
 
 void loop() {
     _menu.update();
+    _menu.redraw();
 }
 
 // We use simple pulse generation algorithm. Every timer 'tick' we add
@@ -62,20 +61,20 @@ ISR(TIMER1_COMPA_vect) {
     // This routine is critical. We don't want anything else to run in parallel!
     // Note: assume r0 and r1 are preserved in stack.
     asm volatile(
-        "cli\n\t"
-        "lds r0, _counter\n\t"
-        "lds r1, _speed\n\t"
-        "add r0, r1\n\t"
-        "sts _counter, r0\n\t"
-        "brcc 1f\n\t"
-        // Overflow occurred, send step pulse
-        "sbi %0, %1\n\t"
-        "nop\n\t"
-        "nop\n\n"
-        "cbi %0, %1\n\t"
-        "1: \n\t"
-         :: "I" (_SFR_IO_ADDR(STEP_PORT)), "I" (STEP_PIN)
-    );
+            "cli\n\t"
+            "lds r0, _counter\n\t"
+            "lds r1, _speed\n\t"
+            "add r0, r1\n\t"
+            "sts _counter, r0\n\t"
+            "brcc 1f\n\t"
+            // Overflow occurred, send step pulse
+            "sbi %0, %1\n\t"
+            "nop\n\t"
+            "nop\n\n"
+            "cbi %0, %1\n\t"
+            "1: \n\t"
+            :: "I" (_SFR_IO_ADDR(STEP_PORT)), "I" (STEP_PIN)
+            );
 }
 
 // Acceleration/decceleration vector

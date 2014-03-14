@@ -11,8 +11,8 @@ public:
 
     void initialize();
     void update();
-private:
     void redraw();
+private:
     uint8_t button();
 
     LiquidCrystal _lcd;
