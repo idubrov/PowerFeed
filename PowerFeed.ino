@@ -1,6 +1,7 @@
 #include <LiquidCrystal.h>
+#include "Menu.h"
 
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+Menu _menu;
 
 volatile uint8_t _speed;
 volatile uint8_t _target_speed;
@@ -11,8 +12,6 @@ volatile uint8_t _counter;          // Internal step generator counter
 #define STEP_PORT       PORTB
 #define STEP_PORT_DIR   DDRB
 #define STEP_PIN        DDB5
-
-int button();
 
 void setup() {
     cli();
@@ -46,27 +45,11 @@ void setup() {
 
     sei();
 
-    lcd.begin(16, 2);
-    lcd.print("hello, world!");
+    _menu.initialize();
 }
 
 void loop() {
-    static int m = 0;
-
-    int b = button();
-    if (b == 1) {
-        _target_speed = 1;
-    } else if (b == 2) {
-        _target_speed = 0;
-    }
-    lcd.setCursor(0, 1);
-
-    int p = analogRead(0);
-    if (p > m && p < 1000) {
-       m = p;
-    }
-    lcd.print(p);
-    lcd.print("    ");
+    _menu.update();
 }
 
 // We use simple pulse generation algorithm. Every timer 'tick' we add
@@ -123,18 +106,3 @@ ISR(TIMER2_COMPA_vect) {
     _speed = speed;
 }
 
-int button() {
-    int k = analogRead(0);
-    if (k < 30) {
-        return 0;
-    } else if (k < 180) {
-        return 1;
-    } else if (k < 360) {
-        return 2;
-    } else if (k < 540) {
-        return 3;
-    } else if (k < 760) {
-        return 4;
-    }
-    return -1;
-}

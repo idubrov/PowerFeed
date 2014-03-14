@@ -1,9 +1,10 @@
 #!/usr/bin/make -f
-MONITOR_PORT  = /dev/tty.usbmodem1411
 BOARD_TAG     = uno
 
-#include /usr/share/arduino/Arduino.mk
+MONITOR_PORT  = /dev/ttyACM0
+include /usr/share/arduino/Arduino.mk
 
 # Mac OS X settings
-include /Users/idubrov/Projects/Arduino-Makefile/Arduino.mk
+#MONITOR_PORT  = /dev/tty.usbmodem1411
+#include /Users/idubrov/Projects/Arduino-Makefile/Arduino.mk
 
