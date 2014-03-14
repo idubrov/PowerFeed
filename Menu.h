@@ -16,9 +16,10 @@ private:
     uint8_t button();
 
     LiquidCrystal _lcd;
-    uint8_t _state;
-    unsigned long _pressed;
+
+    uint8_t _toggle;
     uint8_t _ipm;
+    unsigned long _pressed_at;
 };
 
 #endif
