@@ -45,6 +45,10 @@ void setup() {
     sei();
 
     _menu.initialize();
+
+	// Enable driver, disable outputs
+	digitalWrite(RESET_PIN, 1);
+	digitalWrite(ENABLE_PIN, 0);
 }
 
 void loop() {

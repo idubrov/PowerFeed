@@ -50,7 +50,7 @@ void Menu::update() {
     uint8_t speed = _speed;
 
     if (_pressed_at == 0 || (millis() - _pressed_at) > 200) {
-        if (b == BUp && _ipm < 60) {
+        if (b == BUp && _ipm < 240) {
             // one unit is 1/4 IPM
             _ipm += 4;
             _pressed_at = millis();
@@ -61,6 +61,7 @@ void Menu::update() {
         }
         // Update target speed when jogging in "toggle" mode
         if (_toggle && _target_speed != 0) {
+			digitalWrite(ENABLE_PIN, 1);
             _target_speed = _ipm;
         }
     }
@@ -93,15 +94,22 @@ void Menu::update() {
             uint8_t dir = digitalRead(DIR_PIN);
             uint8_t keyDir = b == BLeft ? LOW : HIGH;
             if (dir == keyDir) {
+				digitalWrite(ENABLE_PIN, 1);
                 _target_speed = _ipm;
             } else if (_speed == 0) {
                 digitalWrite(DIR_PIN, keyDir); // Change direction
+				digitalWrite(ENABLE_PIN, 1);
                 _target_speed = _ipm;
             }
         } else {
             _target_speed = 0;
         }
     }
+
+	if (_target_speed == 0 && speed == 0) {
+		// Not moving -- disable driver outputs
+		digitalWrite(ENABLE_PIN, 0);
+	}
 }
 
 uint8_t Menu::button() {
