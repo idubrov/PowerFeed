@@ -3,22 +3,14 @@
 
 #include <Arduino.h>
 #include <LiquidCrystal.h>
-
-#define STEP_PIN      A1 // PORTC1
-#define DIR_PIN       A2
-#define ENABLE_PIN    A3
-#define RESET_PIN     A4
-#define FAULT_PIN     A5
-
-#define STEP_PIN_PORT   PORTC
-#define STEP_PIN_BIT    PORTC1
+#include "Stepper.h"
 
 class Menu
 {
 public:
     Menu();
 
-    void initialize();
+    void setup();
     void update();
     void redraw();
 private:
@@ -27,8 +19,9 @@ private:
     LiquidCrystal _lcd;
 
     uint8_t _toggle;
-    uint8_t _ipm;
+    uint16_t _ipm;
     unsigned long _pressed_at;
 };
+extern Menu g_menu;
 
 #endif
