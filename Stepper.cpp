@@ -25,6 +25,7 @@ void Stepper::setup() {
     TIMSK1 |= (1 << OCIE1A);
 
     // should be calculated! depends on mechanic configuration...
+    // Value for 16-bit speed, 16 microsteps
     OCR1A = (286 - 1);  // one clock for timer reset
 
     // Set acceleration timer2
@@ -86,10 +87,11 @@ ISR(TIMER1_COMPA_vect) {
 
 // Acceleration/decceleration vector
 ISR(TIMER2_COMPA_vect) {
-    cli();
+    // Don't disable interrupts, we are the only ones to change it.
     uint16_t speed  = g_stepper._speed;
+    // Don't disable interrupts, only main loop changes it.
     uint16_t target = g_stepper._target_speed;
-    sei();
+    
     if (speed <= target) {
         uint16_t accel  = Stepper::_acceleration;
         // Accelerating
@@ -110,7 +112,6 @@ ISR(TIMER2_COMPA_vect) {
         }
     }
 
-    // Update speed
     g_stepper.setSpeed(speed);
 }
 

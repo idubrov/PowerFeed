@@ -21,28 +21,36 @@ public:
     void setup();
 
     inline void __attribute__((always_inline)) setTargetSpeed(uint16_t ts) {
+        // Disable interrupts, as acceleration/deceleration vector reads it
+        // during speed updates
         cli();
         _target_speed = ts;
         sei();
     }
 
     inline uint16_t __attribute__((always_inline)) getTargetSpeed() {
-        // Should be safe to read target speed without disabling interrupts as
-        // we never change it in interrupts.
-        return _target_speed;
+        // Theoretically, should be safe to read target speed without disabling
+        // interrupts as we never change it in interrupts, only in main loop code.
+        cli();
+        uint16_t ts = _target_speed;
+        sei();
+        return ts;
+    }
+
+    inline void __attribute__((always_inline)) setSpeed(uint16_t speed) {
+        // Disable interrupts, as pulse generation vector reads it.
+        cli();
+        _speed = speed;
+        sei();
     }
 
     inline uint16_t __attribute__((always_inline)) getSpeed() {
+        // Speed is changed in the acceleration/deceleration interrupt handler,
+        // so we need to disable interrupts while we are reading it.
         cli();
         uint16_t speed = _speed;
         sei();
         return speed;
-    }
-
-    inline void __attribute__((always_inline)) setSpeed(uint16_t speed) {
-        cli();
-        _speed = speed;
-        sei();
     }
 
 private:
