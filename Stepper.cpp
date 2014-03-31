@@ -4,6 +4,27 @@
 
 Stepper g_stepper;
 
+
+// The algorithm for the pulse generator is the following:
+// 1) Every time timer fires, we add speed value to the counter
+// 2) Once counter overflows, we generate pulse for the stepper motor driver
+//
+// Here is the formula we use to calculate OCR1A value (pulse generator timer):
+//
+// CPU_Frequency = 16000000 per sec
+// Prescaler = 1
+// Timer_Frequency = CPU_Frequency / Prescaler = 16000000
+// Counter_Overflow = 65536 (16-bit counter)
+// 
+// Leadscrew = 16 TPI
+// Steps  = 200 steps/rev
+// Microsteps = 16 pulses/step
+// Pulses/r = Steps * Microsteps = 3200 pulses/rev
+// Pulses/i = Pulses/r * Leadscrew = 51200 pulses/inch
+//
+// Target_IPM = 0.001 inches per unit of speed
+// Timer_Top = 60 * Timer_Frequency / (Target_IPM * Pulses/i * Counter_Overflow) = 286
+// OCR1A = Timer_TOP
 void Stepper::setup() {
     // Configure fault pin as input with pull-up resistor.
     // Fault condition when pulled low.
